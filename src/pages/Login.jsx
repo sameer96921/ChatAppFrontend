@@ -3,12 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-      const navigate=useNavigate()
-
-
-    
-
-
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -35,12 +30,21 @@ const Login = () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      setSuccess("Login successful!");
-      console.log("Response:", res.data);
+      if (res.data?.success) {
+        const { token, user } = res.data; // ✅ expecting backend to send { token, user }
 
-      // Example: save token
-      localStorage.setItem("token", res.data.token);
-      navigate("/message")
+        // Save token + user info
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        setSuccess("Login successful!");
+        console.log("Logged in user:", user);
+
+        // Navigate to chat
+        navigate("/message");
+      } else {
+        setError("Invalid response from server.");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Try again.");
     } finally {
@@ -97,8 +101,6 @@ const Login = () => {
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
-
-      
     </div>
   );
 };
